@@ -1,11 +1,6 @@
 apply from: JAVA_GRADLE
 apply from: TOMCAT_7_GRADLE
 
-tasks.findByPath("artifactoryPublish")?.enabled = false
-sonarRunner {
-	skipProject = true
-}
-
 dependencies {
 	compile "org.springframework.session:spring-session:$springSessionVersion",
 			"com.hazelcast:hazelcast-client:$hazelcastVersion",

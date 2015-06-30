@@ -20,46 +20,6 @@ ext.TOMCAT_GRADLE = "$rootDir/gradle/tomcat.gradle"
 ext.TOMCAT_6_GRADLE = "$rootDir/gradle/tomcat6.gradle"
 ext.TOMCAT_7_GRADLE = "$rootDir/gradle/tomcat7.gradle"
 
-ext.releaseBuild = version.endsWith('RELEASE')
-ext.snapshotBuild = version.endsWith('SNAPSHOT')
-ext.milestoneBuild = !(releaseBuild || snapshotBuild)
-
-apply plugin: 'sonar-runner'
 apply plugin: 'base'
 apply plugin: 'eclipse'
 
-sonarRunner {
-	sonarProperties {
-		property "sonar.java.coveragePlugin", "jacoco"
-		property "sonar.projectName", "Spring Session"
-		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
-		property "sonar.links.homepage", 'https://github.com/spring-projects/spring-session'
-		property "sonar.links.ci", 'https://build.spring.io/browse/SESSION'
-		property "sonar.links.issue", 'https://github.com/spring-projects/spring-session/issues'
-		property "sonar.links.scm", 'https://github.com/spring-projects/spring-session'
-		property "sonar.links.scm_dev", 'https://github.com/spring-projects/spring-session.git'
-		property "sonar.java.coveragePlugin", "jacoco"
-	}
-}
-
-task configDocsZip(dependsOn: [':docs:asciidoctor',':spring-session:javadoc']) << {
-	project.tasks.docsZip.from(project(':docs').asciidoctor) {
-		into('reference')
-	}
-	project.tasks.docsZip.from(project(':spring-session').javadoc) {
-		into('api')
-	}
-}
-
-
-task docsZip(type: Zip, dependsOn: 'configDocsZip') {
-	group = "Distribution"
-	baseName = "spring-session"
-	classifier = "docs"
-	description = "Builds -${classifier} archive containing api and reference " +
-			"for deployment."
-}
-
-artifacts {
-	archives docsZip
-}
