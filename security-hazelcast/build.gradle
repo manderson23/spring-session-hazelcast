@@ -1,0 +1,19 @@
+apply from: JAVA_GRADLE
+apply from: TOMCAT_7_GRADLE
+
+tasks.findByPath("artifactoryPublish")?.enabled = false
+sonarRunner {
+	skipProject = true
+}
+
+dependencies {
+	compile "org.springframework.session:spring-session:$springSessionVersion",
+			"com.hazelcast:hazelcast-client:$hazelcastVersion",
+			"org.springframework:spring-web:$springVersion",
+			"org.springframework.security:spring-security-config:$springSecurityVersion",
+			"org.springframework.security:spring-security-web:$springSecurityVersion",
+			jstlDependencies
+
+	providedCompile "javax.servlet:javax.servlet-api:$servletApiVersion"
+
+}
