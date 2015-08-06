@@ -65,14 +65,20 @@ public class Config {
  	}
  	
  	@Bean
- 	public HazelcastSessionListener sessionListener() {
- 		return new HazelcastSessionListener(eventPublisher);
+ 	public SessionRemovedListener removeListener() {
+ 		return new SessionRemovedListener(eventPublisher);
  	}
  	
  	@Bean
-	public MapSessionRepository sessionRepository(HazelcastSessionListener sessionListener) {
+ 	public SessionEvictedListener evictListener() {
+ 		return new SessionEvictedListener(eventPublisher);
+ 	}
+ 	
+ 	@Bean
+	public MapSessionRepository sessionRepository(SessionRemovedListener removeListener, SessionEvictedListener evictListener) {
  		IMap<String,ExpiringSession> sessions = instance.getMap(sessionMapName);
- 		sessions.addEntryListener(sessionListener, false);
+ 		sessions.addEntryListener(removeListener, false);
+ 		sessions.addEntryListener(evictListener, false);
 		return new MapSessionRepository(sessions);
 	}
  	
