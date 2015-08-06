@@ -40,13 +40,13 @@ import com.hazelcast.core.IMap;
 @Configuration
 public class Config {
 
- 	private HazelcastInstance instance;
-	private String sessionMapName = "spring:session:sessions";
+ 	private String sessionMapName = "spring:session:sessions";
  	
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
 	
- 	public Config() {
+ 	@Bean(destroyMethod = "shutdown")
+ 	public HazelcastInstance hazelcastInstance() {
  		com.hazelcast.config.Config cfg = new com.hazelcast.config.Config();
 		NetworkConfig netConfig = new NetworkConfig();
 		netConfig.setPort(getAvailablePort());
@@ -61,7 +61,7 @@ public class Config {
 		mc.setMaxIdleSeconds(60);
 		cfg.addMapConfig(mc);
 
-		instance = Hazelcast.newHazelcastInstance(cfg);
+		return Hazelcast.newHazelcastInstance(cfg);
  	}
  	
  	@Bean
@@ -75,7 +75,7 @@ public class Config {
  	}
  	
  	@Bean
-	public MapSessionRepository sessionRepository(SessionRemovedListener removeListener, SessionEvictedListener evictListener) {
+	public MapSessionRepository sessionRepository(HazelcastInstance instance, SessionRemovedListener removeListener, SessionEvictedListener evictListener) {
  		IMap<String,ExpiringSession> sessions = instance.getMap(sessionMapName);
  		sessions.addEntryListener(removeListener, false);
  		sessions.addEntryListener(evictListener, false);
