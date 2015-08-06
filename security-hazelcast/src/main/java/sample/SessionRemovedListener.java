@@ -11,13 +11,13 @@ public class SessionRemovedListener implements EntryRemovedListener<String, Expi
 
     private ApplicationEventPublisher eventPublisher;
 	
-	public SessionRemovedListener(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
+    public SessionRemovedListener(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 	
-	public void entryRemoved(EntryEvent<String, ExpiringSession> event) {
-		System.out.println("Session removed: " + event);
-		eventPublisher.publishEvent(new SessionDestroyedEvent(this, event.getKey()));
-	}
+    public void entryRemoved(EntryEvent<String, ExpiringSession> event) {
+        System.out.println("Session removed: " + event);
+        eventPublisher.publishEvent(new SessionDestroyedEvent(this, event.getKey()));
+    }
 
 }

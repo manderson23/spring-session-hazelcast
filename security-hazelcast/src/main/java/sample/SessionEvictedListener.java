@@ -11,13 +11,13 @@ public class SessionEvictedListener implements EntryEvictedListener<String, Expi
 
     private ApplicationEventPublisher eventPublisher;
 	
-	public SessionEvictedListener(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
+    public SessionEvictedListener(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 	
-	public void entryEvicted(EntryEvent<String, ExpiringSession> event) {
-		System.out.println("Session removed: " + event);
-		eventPublisher.publishEvent(new SessionDestroyedEvent(this, event.getKey()));
-	}
+    public void entryEvicted(EntryEvent<String, ExpiringSession> event) {
+        System.out.println("Session removed: " + event);
+        eventPublisher.publishEvent(new SessionDestroyedEvent(this, event.getKey()));
+    }
 
 }
