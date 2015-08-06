@@ -15,6 +15,9 @@
  */
 package sample;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +28,6 @@ import org.springframework.session.MapSessionRepository;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.ExpiringSession;
 import org.springframework.session.web.http.SessionRepositoryFilter;
-import org.springframework.session.web.http.HttpSessionStrategy;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.NetworkConfig;
@@ -38,21 +40,17 @@ import com.hazelcast.core.IMap;
 @Configuration
 public class Config {
 
- 	private HttpSessionStrategy httpSessionStrategy;
-	private HazelcastInstance instance;
+ 	private HazelcastInstance instance;
 	private String sessionMapName = "spring:session:sessions";
  	
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
 	
- 	public Config()
- 	{
- 		// TODO handle creation and shutdown
+ 	public Config() {
  		com.hazelcast.config.Config cfg = new com.hazelcast.config.Config();
 		NetworkConfig netConfig = new NetworkConfig();
-		netConfig.setPort(24730);
+		netConfig.setPort(getAvailablePort());
 		cfg.setNetworkConfig(netConfig);
-		// TODO what is this all about?
 		SerializerConfig serializer = new SerializerConfig()
 			.setTypeClass(Object.class)
 			.setImplementation(new ObjectStreamSerializer());
@@ -74,8 +72,7 @@ public class Config {
  	@Bean
 	public MapSessionRepository sessionRepository(HazelcastSessionListener sessionListener) {
  		IMap<String,ExpiringSession> sessions = instance.getMap(sessionMapName);
- 		String listenerId = sessions.addEntryListener(sessionListener, false);
- 		// TODO remove listener on shutdown
+ 		sessions.addEntryListener(sessionListener, false);
 		return new MapSessionRepository(sessions);
 	}
  	
@@ -83,15 +80,21 @@ public class Config {
 	public <S extends ExpiringSession> SessionRepositoryFilter<? extends ExpiringSession> springSessionRepositoryFilter(SessionRepository<S> sessionRepository, ServletContext servletContext) {
 		SessionRepositoryFilter<S> sessionRepositoryFilter = new SessionRepositoryFilter<S>(sessionRepository);
 		sessionRepositoryFilter.setServletContext(servletContext);
-		if(httpSessionStrategy != null) {
-			sessionRepositoryFilter.setHttpSessionStrategy(httpSessionStrategy);
-		}
 		return sessionRepositoryFilter;
 	}
 	
-	@Autowired(required = false)
-	public void setHttpSessionStrategy(HttpSessionStrategy httpSessionStrategy) {
-		this.httpSessionStrategy = httpSessionStrategy;
+	private static int getAvailablePort() {
+		ServerSocket socket = null;
+		try {
+			socket = new ServerSocket(0);
+			return socket.getLocalPort();
+		} catch(IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				socket.close();
+			}catch(IOException e) {}
+		}
 	}
 }
 // end::class[]
